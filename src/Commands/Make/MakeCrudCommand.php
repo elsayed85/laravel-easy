@@ -6,6 +6,7 @@ use Elsayed85\LaravelEasy\Commands\Command;
 use Elsayed85\LaravelEasy\Facades\File;
 use Elsayed85\LaravelEasy\Traits\HasStubs;
 use Illuminate\Filesystem\Filesystem;
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\text;
 
@@ -28,7 +29,7 @@ class MakeCrudCommand extends Command
         $name = text(
             label: 'Enter the name of the model',
             placeholder: 'Agent',
-            default : 'Elsayed',
+            default : 'Doctor',
             required: true,
             validate: fn (string $value) => match (true) {
                 strlen($value) < 2 => 'The name must be at least 2 characters.',
@@ -51,16 +52,27 @@ class MakeCrudCommand extends Command
                 'repository' => 'Repository',
                 'seeder' => 'Seeder',
                 'factory' => 'Factory',
+                'test' => 'Test',
             ],
             default: [
-                'model',
-                'seeder',
-                'factory',
+                'test',
             ],
             scroll: 10,
         );
 
         $this->generateBasedOnSelectedOptions($options, $name);
+
+        if (! in_array('test', $options)) {
+            $need_tests = confirm(
+                label: 'Do need Tests?',
+                yes: 'Yes Why Not',
+                no: 'No Need'
+            );
+
+            if ($need_tests) {
+                $this->makeTest(ucfirst($name));
+            }
+        }
 
         return self::SUCCESS;
     }
@@ -81,6 +93,7 @@ class MakeCrudCommand extends Command
                 'repository' => $this->makeRepository($nameUpper),
                 'seeder' => $this->makeSeeder($nameUpper),
                 'factory' => $this->makeFactory($nameUpper),
+                'test' => $this->makeTest($nameUpper)
             };
         }
     }
@@ -211,5 +224,32 @@ class MakeCrudCommand extends Command
         $this->call('make:factory', [
             'name' => $name.'Factory',
         ]);
+    }
+
+    /**
+     * Build feature & unit test.
+     *
+     *
+     * @return void
+     */
+    private function makeTest(string $name)
+    {
+        if (config('laravel-easy.use_pest_for_test', false)) {
+            $this->call('make:test', ['--pest' => true, 'name' => "{$name}Test"]);
+        } else {
+            $this->makeStubFile(
+                File::getPath('tests', 'Feature'),
+                $name,
+                'Test',
+                'feature-test'
+            );
+
+            $this->makeStubFile(
+                File::getPath('tests', 'Unit'),
+                $name,
+                'Test',
+                'unit-test'
+            );
+        }
     }
 }

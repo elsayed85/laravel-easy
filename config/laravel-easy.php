@@ -11,6 +11,8 @@ return [
     */
     'repository_namespace' => 'Repository',
 
+    'use_pest_for_test' => false,
+
     /*
          * Modules config.
          *

@@ -15,15 +15,19 @@ trait HasProcess
         $this->processResult = Process::run($command);
 
         if ($this->processResult->exitCode() === 1 || $this->processResult->failed()) {
-            $fail && $fail();
+            if ($fail) {
+                return $fail();
+            }
 
             return self::FAILURE;
         }
 
         if ($this->processResult->successful()) {
-            $success && $success();
+            if ($success) {
+                return $success();
+            }
 
-            return self::SUCCESS;
+            return self::FAILURE;
         }
 
         return self::SUCCESS;
