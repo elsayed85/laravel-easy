@@ -2,9 +2,9 @@
 
 namespace Elsayed85\LaravelEasy\Tests;
 
+use Elsayed85\LaravelEasy\LaravelEasyServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Elsayed85\LaravelEasy\LaravelEasyServiceProvider;
 
 class TestCase extends Orchestra
 {
